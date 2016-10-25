@@ -2,8 +2,8 @@
 title: "Reproducible Research: Assessment 1"
 author: Dapeng
 output: 
-  html_document:
-    keep_md: true
+html_document:
+keep_md: true
 ---
 ## First, identify the library need for the project
 ```{r}
