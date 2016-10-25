@@ -107,9 +107,90 @@ paste("The max steps for interval is", max)
 ```
 
 https://rpubs.com/Liang/Reproducible_Research_porject_1
-
-## Imputing missing values
-
+https://rstudio-pubs-static.s3.amazonaws.com/59476_8947b783031e47b38c4fa74ab11345ac.html
 
 
-## Are there differences in activity patterns between weekdays and weekends?
+##Question 3: Imputing missing values
+First, take a look on how many days with missing values.
+
+```r
+sum(is.na(data$steps))
+```
+
+```
+## [1] 2304
+```
+
+Secone, i will replace the NA with the mean steps for the 5 min interval. The new data is saved in data_ReplaceNA
+
+```r
+meansteps<-mean(data$steps,na.rm = T)
+data_ReplaceNA<-data
+data_ReplaceNA$steps[is.na(data_ReplaceNA$steps)]=meansteps
+head(data_ReplaceNA)
+```
+
+```
+##     steps       date interval
+## 1 37.3826 2012-10-01        0
+## 2 37.3826 2012-10-01        5
+## 3 37.3826 2012-10-01       10
+## 4 37.3826 2012-10-01       15
+## 5 37.3826 2012-10-01       20
+## 6 37.3826 2012-10-01       25
+```
+
+Calculate total number of steps taken each day
+
+```r
+df_steps_by_day<-aggregate(steps~date,data_ReplaceNA,sum)
+head(df_steps_by_day)
+```
+
+```
+##         date    steps
+## 1 2012-10-01 10766.19
+## 2 2012-10-02   126.00
+## 3 2012-10-03 11352.00
+## 4 2012-10-04 12116.00
+## 5 2012-10-05 13294.00
+## 6 2012-10-06 15420.00
+```
+
+```r
+hist(df_steps_by_day$steps, main="Histogram of total number of steps per day", xlab="Total number of steps in a day", breaks=15)
+```
+
+![](Proj1_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+
+##Question 4: Are there differences in activity patterns between weekdays and weekends?
+1. Add a new factor variable "type_of_day" in the data frame
+2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data
+
+
+```r
+data_ReplaceNA$type_of_day<-weekdays(as.Date(data_ReplaceNA$date))
+head(data_ReplaceNA)
+```
+
+```
+##     steps       date interval type_of_day
+## 1 37.3826 2012-10-01        0      Monday
+## 2 37.3826 2012-10-01        5      Monday
+## 3 37.3826 2012-10-01       10      Monday
+## 4 37.3826 2012-10-01       15      Monday
+## 5 37.3826 2012-10-01       20      Monday
+## 6 37.3826 2012-10-01       25      Monday
+```
+
+```r
+data_ReplaceNA$type_of_day[data_ReplaceNA$type_of_day %in% c("Saturday","Sunday")]<-"Weekend"
+data_ReplaceNA$type_of_day[data_ReplaceNA$type_of_day !="Weekend"]<-"Weekday"
+data_ReplaceNA$type_of_day=as.factor(data_ReplaceNA$type_of_day)
+data_noNA_mean<-aggregate(steps~interval+type_of_day,data_ReplaceNA,mean)
+ggplot(data_noNA_mean,aes(x=interval, y=steps))+geom_line()+facet_wrap(~type_of_day)
+```
+
+![](Proj1_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+
+The step in the weekend is more evenly distributed in the intervals for the weekend, while more steps are walked in the morning.
